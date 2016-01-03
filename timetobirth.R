@@ -10,7 +10,7 @@
 #ageH   age en année 
 #sperm  spermatozoïdes en million 
 #testo     niveau de testosterone 
-
+#Correlation 
 library(survival)
 
 d2g<-read.csv("d2g.txt", header = TRUE, sep = " ",na.strings = "<NA>")
