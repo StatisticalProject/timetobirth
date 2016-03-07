@@ -13,6 +13,7 @@
 #Correlation 
 library(survival)
 
+
 d2g<-read.csv("d2g.txt", header = TRUE, sep = " ",na.strings = "<NA>")
 summary(d2g)
 
@@ -24,7 +25,7 @@ plot(fit, conf.int=T, lty=3:2, lwd=1,  cex=2, log=T,
 
 lines(fit, lty=3:2, lwd=2,  cex=2)
 legend(25, 0.1 , c("control","6-MP"), lty=2:3, lwd=2)
-survplot(fit)
+#survplot(fit)
 
 reg<-survreg(Surv(d2g, indic) ~ 1, data = d2g,
         dist="exponential")
@@ -87,6 +88,25 @@ title(main="Melanoma data")
 
 survdiff(Surv(d2g,indic) ~alcFQuant,data=d2g)
 survdiff(Surv(d2g,indic) ~alcHQuant,data=d2g)
+
+d2g$ageFQuant <- cut(d2g$ageF,breaks=unique(quantile(d2g$ageF)),include.lowest=TRUE)
+d2g$ageHQuant <- cut(d2g$ageH,breaks=quantile(d2g$ageH),include.lowest=TRUE)
+levels(d2g$ageFQuant)
+levels(d2g$ageHQuant)
+
+outt=survfit(Surv(d2g,indic) ~ageFQuant,data=d2g)
+plot(outt,lty=1:4,col=1:4,xlab="years",ylab="Probability, KM") ### plusieurs type de lignes
+legend(3,0.4,levels(d2g$ageFQuant),lty=1:4,col=1:4)
+title(main="Melanoma data")
+
+outt=survfit(Surv(d2g,indic) ~ageHQuant,data=d2g)
+plot(outt,lty=1:4,col=1:4,xlab="years",ylab="Probability, KM") ### plusieurs type de lignes
+legend(3,0.4,levels(d2g$ageHQuant),lty=1:4,col=1:4)
+title(main="Melanoma data")
+
+survdiff(Surv(d2g,indic) ~ageFQuant,data=d2g)
+survdiff(Surv(d2g,indic) ~ageHQuant,data=d2g)
+
 d2g$sperm<-as.numeric(as.character(d2g$sperm))
 d2gSperm<-d2g[complete.cases(d2g[,12]),]
 
@@ -103,4 +123,6 @@ title(main="Melanoma data")
 
 
 survdiff(Surv(d2g,indic) ~spermQuant,data=d2gSperm)
+
+coxph(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g) 
 
