@@ -70,7 +70,12 @@ img {
 <pre class="r"><code>library(survival)</code></pre>
 <div id="chargement-des-donnees" class="section level2">
 <h2>Chargement des données</h2>
-<pre class="r"><code>d2g&lt;-read.csv(&quot;d2g.txt&quot;, header = TRUE, sep = &quot; &quot;,na.strings = &quot;&lt;NA&gt;&quot;)</code></pre>
+<pre class="r"><code>d2g&lt;-read.csv(&quot;d2g.txt&quot;, header = TRUE, sep = &quot; &quot;,na.strings = &quot;&lt;NA&gt;&quot;)
+d2g[d2g$sperm == &quot;NA&quot;,]$sperm=NA
+d2g$sperm=as.numeric(d2g$sperm)
+d2g[d2g$testo == &quot;NA&quot;,]$testo=NA
+
+d2g$testo=as.numeric(gsub(&quot;NA&quot;, &quot;&quot;, d2g$testo))</code></pre>
 </div>
 <div id="description-des-donnees" class="section level2">
 <h2>Description des données</h2>
@@ -89,7 +94,11 @@ img {
 <li>sperm : spermatozoïdes en million</li>
 <li><p>testo : niveau de testosterone</p></li>
 </ul>
-<p>Sommaire statistique des variables</p>
+</div>
+<div id="sommaire-statistique-des-variables" class="section level2">
+<h2>Sommaire statistique des variables</h2>
+<pre class="r"><code>nrow(d2g)</code></pre>
+<pre><code>## [1] 423</code></pre>
 <pre class="r"><code>summary(d2g)</code></pre>
 <pre><code>##        id             d2g             indic             bmiF         
 ##  Min.   :  1.0   Min.   : 15.31   Min.   :0.0000   Min.   :-1111.11  
@@ -107,22 +116,22 @@ img {
 ##  3rd Qu.:   25.83   3rd Qu.: 6.000   3rd Qu.:13.000   3rd Qu.:1.0000  
 ##  Max.   :   38.57   Max.   :39.000   Max.   :84.000   Max.   :1.0000  
 ##                                                                       
-##       fumH             ageF            ageH           sperm    
-##  Min.   :0.0000   Min.   :19.82   Min.   :18.33   NA     :113  
-##  1st Qu.:0.0000   1st Qu.:24.15   1st Qu.:26.18   34     :  6  
-##  Median :0.0000   Median :25.95   Median :27.90   14     :  5  
-##  Mean   :0.3144   Mean   :26.10   Mean   :28.20   17     :  5  
-##  3rd Qu.:1.0000   3rd Qu.:27.87   3rd Qu.:30.06   21     :  5  
-##  Max.   :1.0000   Max.   :35.19   Max.   :37.19   24     :  5  
-##                                                   (Other):284  
-##      testo    
-##  NA     :388  
-##  0.6NA  :  5  
-##  0.8NA  :  4  
-##  1.4NA  :  4  
-##  1.1NA  :  3  
-##  1.NA   :  3  
-##  (Other): 16</code></pre>
+##       fumH             ageF            ageH           sperm       
+##  Min.   :0.0000   Min.   :19.82   Min.   :18.33   Min.   :  1.00  
+##  1st Qu.:0.0000   1st Qu.:24.15   1st Qu.:26.18   1st Qu.: 52.25  
+##  Median :0.0000   Median :25.95   Median :27.90   Median : 89.00  
+##  Mean   :0.3144   Mean   :26.10   Mean   :28.20   Mean   : 85.31  
+##  3rd Qu.:1.0000   3rd Qu.:27.87   3rd Qu.:30.06   3rd Qu.:120.00  
+##  Max.   :1.0000   Max.   :35.19   Max.   :37.19   Max.   :156.00  
+##                                                   NA's   :113     
+##      testo      
+##  Min.   :0.000  
+##  1st Qu.:0.800  
+##  Median :1.100  
+##  Mean   :1.206  
+##  3rd Qu.:1.400  
+##  Max.   :2.900  
+##  NA's   :388</code></pre>
 <p>Le délai de grossesse (d2g) s’étale de 15 à 195 jours. Il y a 40% de censure (indic)</p>
 <p>Le bmi des femmes et des hommes contient une incohérence sur la valeur minimum -1111.11 qui est bien entendu impossible et doit représenté une donnée manquante.</p>
 <pre class="r"><code>nrow(d2g[d2g$bmiF&lt;0,])</code></pre>
@@ -139,9 +148,62 @@ img {
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 ##   18.20   22.53   24.15   24.44   25.83   38.57</code></pre>
 <p>Le bmi des hommes dans l’échantillon est plus important aussi sur la valeur minimum, la médiane , la moyenne ou la valeur maximale.</p>
+<p>Le nombre de boisson alcoolisé(alcF et alcH) est très largement supérieur pour les hommes. Il y a dans les deux sexes des quantités minimum à 0. Les hommes peuvent consommer jusqu’a 84 boissons par semaine ce qui est très important.</p>
+<p>Il y a 29 % de fumeur femme(fumF) et 31 % d’hommes(fumH) dans cet échantillon.</p>
+<p>L’age des hommes et des femmes est sensiblement comparable. L’age minimum est de 20 ans pour les femmes et 18 pour les hommes. L’age maximale est de 35 ans pour les femmes et 37 ans pour les hommes. La moyenne quant a elle est de 26 pour les femmes et 28 ans pour les hommes.</p>
+<p>Les spermatozoide posséde pres de 113 values manquantes. Evoluant de 1 à 156 millions de spermatozoides, il y a en moyenne 85 millions de spermatozoides.</p>
+<p>Les taux de testoterones sont particulièrement mal renseigné avec près de 388 valeurs manquantes soit près de 92% de l’échantillon.</p>
+</div>
+<div id="gestion-des-donnees-manquantes" class="section level2">
+<h2>Gestion des données manquantes</h2>
+<p>On change les deux individus ayants des données de bmi manquante par NA.</p>
+<pre class="r"><code>d2g[d2g$bmiH&lt;0,]$bmiH&lt;-NA
+d2g[d2g$bmiF&lt;0,]$bmiF&lt;-NA</code></pre>
+<p>On charge les libraries utiles par imputation multiple.</p>
+<pre class="r"><code>library(mice)</code></pre>
+<pre><code>## Warning: package 'mice' was built under R version 3.2.4</code></pre>
+<pre><code>## Loading required package: Rcpp
+## mice 2.25 2015-11-09</code></pre>
+<pre class="r"><code>library(lattice)</code></pre>
+<p>On lance l’algorithme d’imputation des données manquantes. Pui son impute</p>
+<pre class="r"><code>imp1&lt;-mice(d2g[,c(2,4,5,6,7,10,11,12)],m=1,seed=500)</code></pre>
+<pre><code>## 
+##  iter imp variable
+##   1   1  bmiF  bmiH  sperm
+##   2   1  bmiF  bmiH  sperm
+##   3   1  bmiF  bmiH  sperm
+##   4   1  bmiF  bmiH  sperm
+##   5   1  bmiF  bmiH  sperm</code></pre>
+<pre class="r"><code>densityplot(imp1)</code></pre>
+<p><img src="data:image/png;base64,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" title alt width="672" /> Comme il n’y pas que deux données d’imputation de données pour les variables bmi, on ne visualisera pas leur distribution.</p>
+<p>Au contraire du nombre de spermatozoide, ou les variables manquantes sont tres frequentes. Lorsque l’on regarde la distribution des spermatozoide. Les nouvelles données ont une distribution proche des données originales.</p>
+<p>Puis, on impute les données sur notre jeux original.</p>
+<pre class="r"><code>comp&lt;-complete(imp1, 1)
+d2g$sperm&lt;-comp$sperm
+d2g$bmiH&lt;-comp$bmiH
+d2g$bmiF&lt;-comp$bmiF</code></pre>
 </div>
 <div id="correlation-des-variables-quantitatives" class="section level2">
 <h2>Correlation des variables quantitatives</h2>
+<pre class="r"><code>cor(d2g[,c(2,4,5,6,7,10,11,12)])</code></pre>
+<pre><code>##               d2g        bmiF          bmiH          alcF         alcH
+## d2g    1.00000000  0.06519858  7.811374e-02  8.884950e-02  0.068360252
+## bmiF   0.06519858  1.00000000  2.862884e-01 -9.211860e-02 -0.105893854
+## bmiH   0.07811374  0.28628839  1.000000e+00 -1.158473e-05  0.001822953
+## alcF   0.08884950 -0.09211860 -1.158473e-05  1.000000e+00  0.417793875
+## alcH   0.06836025 -0.10589385  1.822953e-03  4.177939e-01  1.000000000
+## ageF   0.03842423 -0.15551915 -3.609474e-02  1.686418e-01 -0.025267557
+## ageH   0.03844639 -0.01636724  1.686170e-02  1.506552e-02 -0.030977262
+## sperm -0.05598857  0.04659407  1.031938e-01 -7.803540e-02 -0.022789013
+##              ageF        ageH       sperm
+## d2g    0.03842423  0.03844639 -0.05598857
+## bmiF  -0.15551915 -0.01636724  0.04659407
+## bmiH  -0.03609474  0.01686170  0.10319380
+## alcF   0.16864185  0.01506552 -0.07803540
+## alcH  -0.02526756 -0.03097726 -0.02278901
+## ageF   1.00000000  0.48114778 -0.03661488
+## ageH   0.48114778  1.00000000  0.15150992
+## sperm -0.03661488  0.15150992  1.00000000</code></pre>
 </div>
 <div id="analyse-des-focntions-de-survie" class="section level2">
 <h2>Analyse des focntions de survie</h2>
