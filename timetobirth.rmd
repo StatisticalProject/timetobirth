@@ -81,18 +81,30 @@ library(mice)
 library(lattice)
 ```
 On lance l'algorithme d'imputation des données manquantes.
+Pui son impute 
 ```{r}
 imp1<-mice(d2g[,c(2,4,5,6,7,10,11,12)],m=1,seed=500)
 
 densityplot(imp1)
 
-summary(d2g$sperm)
-summary(imp1$imp$sperm)
 ```
+Comme il n'y pas que deux données d'imputation de données pour les variables bmi, on ne visualisera pas leur distribution.
+
+Au contraire du nombre de spermatozoide, ou les variables manquantes sont tres frequentes.
+Lorsque l'on regarde la distribution des spermatozoide. Les nouvelles données ont une distribution proche des données originales.
+
+Puis, on impute les données sur notre jeux original.
+```{r}
+comp<-complete(imp1, 1)
+d2g$sperm<-comp$sperm
+d2g$bmiH<-comp$bmiH
+d2g$bmiF<-comp$bmiF
+```
+
 ## Correlation des variables quantitatives
 
 ```{r}
-cor(d2g[,c(2,4,5,6,7,10,11,12,13)])
+cor(d2g[,c(2,4,5,6,7,10,11,12)])
 ```
 
 
