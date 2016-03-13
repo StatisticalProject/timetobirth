@@ -106,13 +106,96 @@ d2g$bmiF<-comp$bmiF
 ```{r}
 cor(d2g[,c(2,4,5,6,7,10,11,12)])
 ```
+Il n'y a aucune forte correlation entre nos variables. La corrélation la plus forte est sur le nombre de boisson alcoolisé par semaine entre les hommes et les femmes.
 
+## Variables quanlitatives
 
+```{r}
+table(d2g$fumF,d2g$fumH)
+```
+Il n'y a aucune forte correlation entre nos variables. La corrélation la plus forte est sur le nombre de boisson alcoolisé par semaine entre les hommes et les femmes.
 
-## Analyse des focntions de survie
+## Analyse des fonctions de survie
 
+On commence par decoupé nos variables quantitativrs en variables qualitative.
 
+```{r}
+d2g$bmiFQual <- cut(d2g$bmiF,breaks=quantile(d2g$bmiF),include.lowest=TRUE)
+levels(d2g$bmiFQual)
+d2g$bmiHQual <- cut(d2g$bmiF,breaks=quantile(d2g$bmiH),include.lowest=TRUE)
+levels(d2g$bmiHQual)
+d2g$alcFQual <- cut(d2g$alcF,breaks=unique(quantile(d2g$alcF)),include.lowest=TRUE)
+levels(d2g$alcFQual)
+d2g$alcHQual <- cut(d2g$alcH,breaks=quantile(d2g$alcH),include.lowest=TRUE)
+levels(d2g$alcHQual)
+d2g$ageFQual <- cut(d2g$ageF,breaks=quantile(d2g$ageF),include.lowest=TRUE)
+levels(d2g$ageFQual)
+d2g$ageHQual <- cut(d2g$ageH,breaks=quantile(d2g$ageH),include.lowest=TRUE)
+levels(d2g$ageHQual)
+d2g$spermQual <- cut(d2g$sperm,breaks=quantile(d2g$sperm),include.lowest=TRUE)
+levels(d2g$spermQual)
+```
 
+```{r}
+fit <- survfit(Surv(d2g, indic) ~ 1, data = d2g) 
+plot(fit, lty = 2:3) 
+```
+```{r}
+colList<-c("red","blue","green","black")
+#bmiF
+fit <- survfit(Surv(d2g, indic) ~ bmiFQual, data = d2g) 
+plot(fit, lty = 2:3,col=colList) 
+title("Fonction de survie - BMI Femme") 
+legend(130, .97, c("(24.3,37.6]","(21.9,24.3]", "(20.3,21.9]","[15.2,20.3]"), lty = 2:3,col=1:length(d2g$bmiFQual)) 
+#bmiH
+fit <- survfit(Surv(d2g, indic) ~ bmiHQual, data = d2g) 
+plot(fit, lty = 2:3,col=colList) 
+title("Fonction de survie - BMI Homme") 
+legend(130, .97, c("(25.9,38.6]", "(24.1,25.9]","(22.5,24.1]", "[18.2,22.5]"), lty = 2:3,col=1:length(d2g$bmiHQual))
+#alcF
+fit <- survfit(Surv(d2g, indic) ~ alcFQual, data = d2g) 
+plot(fit, lty = 2:3,col=colList)
+title("Fonction de survie - Alcool Femme") 
+legend(130, .97, c("(6,39]",  "(2,6]",  "[0,2]"), lty = 2:3,col=colList)
+#alcH
+fit <- survfit(Surv(d2g, indic) ~ alcHQual, data = d2g) 
+plot(fit, lty = 2:3,col=colList) 
+title("Fonction de survie - Alcool Homme") 
+legend(130, .97, c("(30.1,37.2]", "(27.9,30.1]","(26.2,27.9]", "[18.3,26.2]"), lty = 2:3,col=colList)
+#ageF
+fit <- survfit(Surv(d2g, indic) ~ ageFQual, data = d2g) 
+plot(fit, lty = 2:3,col=colList) 
+title("Fonction de survie - Age Femme") 
+legend(130, .97, c("(27.9,35.2]" ,"(25.9,27.9]","(24.1,25.9]"  ,"[19.8,24.1]"), lty = 2:3,col=1:length(d2g$ageFQual))
+#ageH
+fit <- survfit(Surv(d2g, indic) ~ ageHQual, data = d2g) 
+plot(fit, lty = 2:3,col=colList) 
+title("Fonction de survie - Age Homme") 
+legend(130, .97, c( "(30.1,37.2]" ,"(27.9,30.1]","(26.2,27.9]", "[18.3,26.2]"), lty = 2:3,col=1:length(d2g$ageHQual))
+#fumF
+fit <- survfit(Surv(d2g, indic) ~ fumF, data = d2g) 
+plot(fit, lty = 2:3,col=colList) 
+title("Fonction de survie - Fumeur Femme") 
+legend(130, .97, c("Non fumeuse","Fumeuse"), lty = 2:3,col=1:length(d2g$fumF))
+#fumH
+fit <- survfit(Surv(d2g, indic) ~ fumH, data = d2g) 
+plot(fit, lty = 2:3,col=colList) 
+title("Fonction de survie - Fumeur Homme") 
+legend(130, .97, c("Non fumeur","Fumeur"), lty = 2:3,col=1:length(d2g$fumH))
+#Sperm
+fit <- survfit(Surv(d2g, indic) ~ spermQual, data = d2g) 
+plot(fit, lty = 2:3,col=colList) 
+title("Fonction de survie - Sperm")
+legend(130, .97, c("(119,156]" , "(88,119]" ,"(51.5,88]" , "[1,51.5]"), lty = 2:3,col=1:length(d2g$spermQual))
+```
+
+legend(100, .8, c("Maintained", "Nonmaintained","toto"), lty = 2:3) 
+plot(fit, conf.int=T, lty=3:2, lwd=1,  cex=2, log=T,
+     xlab="Délai de grosesse (jours)", ylab="Survie")
+par(mfrow=c(2,2))
+plot(wt,mpg, main="Scatterplot of wt vs. mpg")
+plot(wt,disp, main="Scatterplot of wt vs disp")
+```
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
