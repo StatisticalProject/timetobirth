@@ -14,6 +14,9 @@ library(survival)
 d2g<-read.csv("d2g.txt", header = TRUE, sep = " ",na.strings = "<NA>")
 d2g[d2g$sperm == "NA",]$sperm=NA
 d2g$sperm=as.numeric(d2g$sperm)
+d2g[d2g$testo == "NA",]$testo=NA
+
+d2g$testo=as.numeric(gsub("NA", "", d2g$testo))
 
 ```
 
@@ -34,8 +37,9 @@ Les données décrivent le délai de grosesse selon les covariables suivantes:
 - sperm  : spermatozoïdes en million 
 - testo  : niveau de testosterone
 
-Sommaire statistique des variables
+##Sommaire statistique des variables
 ```{r}
+nrow(d2g)
 summary(d2g)
 ```
 
@@ -61,10 +65,36 @@ Il y a 29 % de fumeur femme(fumF) et 31 % d'hommes(fumH) dans cet échantillon.
 
 L'age des hommes et des femmes est sensiblement comparable. L'age minimum est de 20 ans pour les femmes et 18 pour les hommes. L'age maximale est de 35 ans pour les femmes et 37 ans pour les hommes. La moyenne quant a elle est de 26 pour les femmes et 28 ans pour les hommes.
 
-Les spermatozoide posséde pres de 113 values manquantes. 
+Les spermatozoide posséde pres de 113 values manquantes.  Evoluant de 1 à 156 millions de spermatozoides, il y a en moyenne 85 millions de spermatozoides.
 
+Les taux de testoterones sont particulièrement mal renseigné avec près de 388 valeurs manquantes soit près de 92% de l'échantillon.
 
+## Gestion des données manquantes
+On change les deux individus ayants des données de bmi manquante par NA.
+```{r}
+d2g[d2g$bmiH<0,]$bmiH<-NA
+d2g[d2g$bmiF<0,]$bmiF<-NA
+```
+On charge les libraries utiles par imputation multiple.
+```{r}
+library(mice)
+library(lattice)
+```
+On lance l'algorithme d'imputation des données manquantes.
+```{r}
+imp1<-mice(d2g[,c(2,4,5,6,7,10,11,12)],m=1,seed=500)
+
+densityplot(imp1)
+
+summary(d2g$sperm)
+summary(imp1$imp$sperm)
+```
 ## Correlation des variables quantitatives
+
+```{r}
+cor(d2g[,c(2,4,5,6,7,10,11,12,13)])
+```
+
 
 
 ## Analyse des focntions de survie
