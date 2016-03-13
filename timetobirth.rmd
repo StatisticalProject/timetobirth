@@ -1,0 +1,88 @@
+---
+title: "STA215"
+author: "Sebastien DIAZ"
+date: "13 mars 2016"
+output: html_document
+---
+
+```{r}
+library(survival)
+```
+
+## Chargement des données
+```{r}
+d2g<-read.csv("d2g.txt", header = TRUE, sep = " ",na.strings = "<NA>")
+d2g[d2g$sperm == "NA",]$sperm=NA
+d2g$sperm=as.numeric(d2g$sperm)
+
+```
+
+## Description des données
+Les données décrivent le délai de grosesse selon les covariables suivantes:
+
+- d2g    : delai de grossesse en jours 
+- indic  : 1 = grossesse , 0 = censure
+
+- bmiF   : bmi de la femme
+- bmiH   : bmi de l'homme 
+- alcF   : nombre de boisson alcolisée par semaine chez la femme 
+- alcH   : nombre de boisson alcolisée par semaine chez l'homme 
+- fumF   : 1 =  fumeuse,  0=  pas fumeuse
+- fumH   : 1 = fumeur,  0= pas fumeur
+- ageF   : age en année
+- ageH   : age en année 
+- sperm  : spermatozoïdes en million 
+- testo  : niveau de testosterone
+
+Sommaire statistique des variables
+```{r}
+summary(d2g)
+```
+
+Le délai de grossesse (d2g) s'étale de 15 à 195 jours. Il y a 40% de censure (indic)
+
+Le bmi des femmes et des hommes contient une incohérence sur la valeur minimum -1111.11 qui est bien entendu impossible et doit représenté une donnée manquante.
+```{r}
+nrow(d2g[d2g$bmiF<0,])
+nrow(d2g[d2g$bmiH<0,])
+nrow(d2g[d2g$bmiH<0&d2g$bmiF<0,])
+```
+Seulement deux indivdus sont concernés pour le bmi des femmes et des hommes.
+En les enlevement, le sommaire est:
+```{r}
+summary(d2g[d2g$bmiF>0,]$bmiF)
+summary(d2g[d2g$bmiH>0,]$bmiH)
+```
+Le bmi des hommes dans l'échantillon est plus important aussi sur la valeur minimum, la médiane , la moyenne ou la valeur maximale.
+
+Le nombre de boisson alcoolisé(alcF et alcH) est très largement supérieur pour les hommes. Il y a dans les deux sexes des quantités minimum à 0. Les hommes peuvent consommer jusqu'a 84 boissons par semaine ce qui est très important.
+
+Il y a 29 % de fumeur femme(fumF) et 31 % d'hommes(fumH) dans cet échantillon.
+
+L'age des hommes et des femmes est sensiblement comparable. L'age minimum est de 20 ans pour les femmes et 18 pour les hommes. L'age maximale est de 35 ans pour les femmes et 37 ans pour les hommes. La moyenne quant a elle est de 26 pour les femmes et 28 ans pour les hommes.
+
+Les spermatozoide posséde pres de 113 values manquantes. 
+
+
+## Correlation des variables quantitatives
+
+
+## Analyse des focntions de survie
+
+
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
