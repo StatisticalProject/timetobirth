@@ -138,7 +138,8 @@ levels(d2g$spermQual)
 
 ```{r}
 fit <- survfit(Surv(d2g, indic) ~ 1, data = d2g) 
-plot(fit, lty = 2:3) 
+plot(fit, lty = 2:3)
+plot(fit, fun='cloglog')
 ```
 ```{r}
 colList<-c("red","blue","green","black")
