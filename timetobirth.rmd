@@ -140,6 +140,17 @@ levels(d2g$spermQual)
 fit <- survfit(Surv(d2g, indic) ~ 1, data = d2g) 
 plot(fit, lty = 2:3)
 plot(fit, fun='cloglog')
+
+cox_ttt <- coxph(Surv(d2g, indic) ~  1
+                 , data=d2g)
+summary(cox_ttt)
+
+#vérification HP
+test.mydata <- cox.zph(cox_ttt, transform="km", global=TRUE )
+print(test.mydata)
+                   
+
+
 ```
 ```{r}
 colList<-c("red","blue","green","black")
