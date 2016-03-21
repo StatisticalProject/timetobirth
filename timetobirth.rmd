@@ -15,6 +15,8 @@ d2g<-read.csv("d2g.txt", header = TRUE, sep = " ",na.strings = "<NA>")
 d2g[d2g$sperm == "NA",]$sperm=NA
 d2g$sperm=as.numeric(d2g$sperm)
 d2g[d2g$testo == "NA",]$testo=NA
+d2g$fumF=as.factor(d2g$fumF)
+d2g$fumH=as.factor(d2g$fumH)
 
 d2g$testo=as.numeric(gsub("NA", "", d2g$testo))
 
@@ -150,10 +152,10 @@ colList<-c("red","blue","green","black")
 fit <- survfit(Surv(d2g, indic) ~ bmiFQual, data = d2g) 
 plot(fit, lty = 2:3,col=colList) 
 title("Fonction de survie - BMI Femme") 
-legend(130, .97, c("(24.3,37.6]","(21.9,24.3]", "(20.3,21.9]","[15.2,20.3]"), lty = 2:3,col=1:length(d2g$bmiFQual)) 
+legend(130, .97, levels(d2g$bmiFQual), lty = 2:3,col=colList) 
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - BMI Femme") 
-legend(130, .97, c("(24.3,37.6]","(21.9,24.3]", "(20.3,21.9]","[15.2,20.3]"), lty = 2:3,col=1:length(d2g$bmiFQual)) 
+legend(130, .97, levels(d2g$bmiFQual), lty = 2:3,col=colList) 
 
 ```
 Jusqu'a 100 jours et quelque soit l'indice de masse corporelle, il n'y a pas grande différence. Les courbes sont assez proche. Après 100 jours de grosses, les femmes, dont le BMI est plus important ont tendance à avoir  une survie plus longue. Au vu de la courbe des risque cumulé, on ne peut tenter un test du log rank pour voir si les courbes de survie sont identiques.
@@ -163,10 +165,10 @@ Jusqu'a 100 jours et quelque soit l'indice de masse corporelle, il n'y a pas gra
 fit <- survfit(Surv(d2g, indic) ~ bmiHQual, data = d2g) 
 plot(fit, lty = 2:3,col=colList) 
 title("Fonction de survie - BMI Homme") 
-legend(130, .97, c("(25.9,38.6]", "(24.1,25.9]","(22.5,24.1]", "[18.2,22.5]"), lty = 2:3,col=1:length(d2g$bmiHQual))
+legend(130, .97, levels(d2g$bmiHQual), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - BMI Homme") 
-legend(130, .97, c("(25.9,38.6]", "(24.1,25.9]","(22.5,24.1]", "[18.2,22.5]"), lty = 2:3,col=1:length(d2g$bmiHQual))
+legend(130, .97, levels(d2g$bmiHQual), lty = 2:3,col=colList)
 
 
 ```
@@ -180,10 +182,10 @@ Les courbes de risque cumulés ne sont pas indiqué pour tester l'égalité des 
 fit <- survfit(Surv(d2g, indic) ~ alcFQual, data = d2g) 
 plot(fit, lty = 2:3,col=colList)
 title("Fonction de survie - Alcool Femme") 
-legend(130, .97, c("(6,39]",  "(2,6]",  "[0,2]"), lty = 2:3,col=colList)
+legend(130, .97, levels(d2g$alcFQual), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Alcool Femme") 
-legend(130, .97, c("(6,39]",  "(2,6]",  "[0,2]"), lty = 2:3,col=colList)
+legend(130, .97,levels(d2g$alcFQual), lty = 2:3,col=colList)
 
 ```
 On s'appercoit que les femmes ayant une alcoolemie tres faible, on une courbe se survie pendant la grosesse plus importante. Une l'acoolemie superieure a deux verres par semaine conduit à une coubre plus faible. La courbe de risaue cumulé fait apparaitre une non proportionnalité des courbes du nottament aux croisements entre les variables.
@@ -195,10 +197,10 @@ On s'appercoit que les femmes ayant une alcoolemie tres faible, on une courbe se
 fit <- survfit(Surv(d2g, indic) ~ alcHQual, data = d2g) 
 plot(fit, lty = 2:3,col=colList) 
 title("Fonction de survie - Alcool Homme") 
-legend(130, .97, c("(30.1,37.2]", "(27.9,30.1]","(26.2,27.9]", "[18.3,26.2]"), lty = 2:3,col=colList)
+legend(130, .97,levels(d2g$alcHQual), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Alcool Homme") 
-legend(130, .97, c("(30.1,37.2]", "(27.9,30.1]","(26.2,27.9]", "[18.3,26.2]"), lty = 2:3,col=colList)
+legend(130, .97, levels(d2g$alcHQual), lty = 2:3,col=colList)
 
 ```
 Les courbes de survie sur l'alcoolemie des hommes sont tres proches. Le test du log rank n'est pas approprié au vue de des risques cumulés dont les courbes s'entrecroisent. On ne peut conclure à l'égalité des courbes de survie.
@@ -208,10 +210,10 @@ Les courbes de survie sur l'alcoolemie des hommes sont tres proches. Le test du 
 fit <- survfit(Surv(d2g, indic) ~ ageFQual, data = d2g) 
 plot(fit, lty = 2:3,col=colList) 
 title("Fonction de survie - Age Femme") 
-legend(130, .97, c("(27.9,35.2]" ,"(25.9,27.9]","(24.1,25.9]"  ,"[19.8,24.1]"), lty = 2:3,col=1:length(d2g$ageFQual))
+legend(130, .97, levels(d2g$ageFQual), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Age Femme") 
-legend(130, .97, c("(27.9,35.2]" ,"(25.9,27.9]","(24.1,25.9]"  ,"[19.8,24.1]"), lty = 2:3,col=1:length(d2g$ageFQual))
+legend(130, .97, levels(d2g$ageFQual), lty = 2:3,col=colList)
 
 survdiff(Surv(d2g, indic) ~ ageFQual, data = d2g)
 ```
@@ -223,10 +225,10 @@ La fonction de survie des femmes d'age de 20 à 24 ans est legerement plus faibl
 fit <- survfit(Surv(d2g, indic) ~ ageHQual, data = d2g) 
 plot(fit, lty = 2:3,col=colList) 
 title("Fonction de survie - Age Homme") 
-legend(130, .97, c( "(30.1,37.2]" ,"(27.9,30.1]","(26.2,27.9]", "[18.3,26.2]"), lty = 2:3,col=1:length(d2g$ageHQual))
+legend(130, .97,  levels(d2g$ageHQual), lty = 2:3,colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Age Homme") 
-legend(130, .97, c( "(30.1,37.2]" ,"(27.9,30.1]","(26.2,27.9]", "[18.3,26.2]"), lty = 2:3,col=1:length(d2g$ageHQual))
+legend(130, .97, levels(d2g$ageHQual), lty = 2:3,colList)
 ```
 Les courbes de survie et de risque cumulé de l'age des hommes sont très proches et se croisent à de nombreux endroits. Le test du log rank n'étant pas forcement le plus indiqué dans ce cas de non respect de proportionnalité des risques, nous ne pouvons conclure à l'égalité des courbes de survie selon les ages. 
 
@@ -235,10 +237,10 @@ Les courbes de survie et de risque cumulé de l'age des hommes sont très proche
 fit <- survfit(Surv(d2g, indic) ~ fumF, data = d2g) 
 plot(fit, lty = 2:3,col=colList) 
 title("Fonction de survie - Fumeur Femme") 
-legend(130, .97, c("Non fumeuse","Fumeuse"), lty = 2:3,col=1:length(d2g$fumF))
+legend(130, .97, c("Non fumeuse","Fumeuse"), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Fumeur Femme") 
-legend(130, .97, c("Non fumeuse","Fumeuse"), lty = 2:3,col=1:length(d2g$fumF))
+legend(130, .97, c("Non fumeuse","Fumeuse"), lty = 2:3,col=colList)
 survdiff(Surv(d2g, indic) ~ fumF, data = d2g)
 
 ```
@@ -250,10 +252,10 @@ Les femmes fumeuse ont un survie plus faible que les non fumeuses. Les risque so
 fit <- survfit(Surv(d2g, indic) ~ fumH, data = d2g) 
 plot(fit, lty = 2:3,col=colList) 
 title("Fonction de survie - Fumeur Homme") 
-legend(130, .97, c("Non fumeur","Fumeur"), lty = 2:3,col=1:length(d2g$fumH))
+legend(130, .97, c("Non fumeur","Fumeur"), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Fumeur Homme") 
-legend(130, .97, c("Non fumeur","Fumeur"), lty = 2:3,col=1:length(d2g$fumH))
+legend(130, .97, c("Non fumeur","Fumeur"), lty = 2:3,col=colList)
 survdiff(Surv(d2g, indic) ~ fumH, data = d2g)
 
 ```
@@ -265,10 +267,10 @@ Comme pour les femmes les hommes fumeurs ont une courbe de survie légèremment 
 fit <- survfit(Surv(d2g, indic) ~ spermQual, data = d2g) 
 plot(fit, lty = 2:3,col=colList) 
 title("Fonction de survie - Sperm")
-legend(130, .97, c("(119,156]" , "(88,119]" ,"(51.5,88]" , "[1,51.5]"), lty = 2:3,col=1:length(d2g$spermQual))
+legend(130, .97, levels(d2g$spermQual), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog")
 title("Risque cumulé - Sperm")
-legend(130, .97, c("(119,156]" , "(88,119]" ,"(51.5,88]" , "[1,51.5]"), lty = 2:3,col=1:length(d2g$spermQual))
+legend(130, .97, levels(d2g$spermQual), lty = 2:3,col=colList)
 ```
 Les courbes de survie correspondant aux millions de spermes chez les hommes sont tres proche. Les fonctions de risque cumulées sont proche mais s'entrecroisent et ne permettent de valider une égalité des fonctions de survies. 
 
@@ -287,6 +289,16 @@ When you click the **Knit** button a document will be generated that includes bo
 
 ```{r}
 summary(cars)
+cox_ttt <-coxph(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g) 
+
+summary(cox_ttt)
+
+#vérification HP
+test.mydata <- cox.zph(cox_ttt, transform="km", global=TRUE )
+print(test.mydata)
+
+survreg(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g, dist='weibull')
+
 ```
 
 You can also embed plots, for example:

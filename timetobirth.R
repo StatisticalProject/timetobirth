@@ -123,6 +123,14 @@ title(main="Melanoma data")
 
 
 survdiff(Surv(d2g,indic) ~spermQuant,data=d2gSperm)
+d2g[d2g$fumF==1,]$fumFQual="1"
+cut(d2g$fumF,breaks=0:1)
+d2g$fumFQual=as.factor(d2g$fumF)
+d2g$fumHQual=as.factor(d2g$fumH)
+
+cox_ttt <-coxph(Surv(d2g,indic)  ~ bmiFQual + bmiHQual+alcFQual+alcHQual+fumFQual+fumHQual+ageFQual+ageHQual+spermQual , d2g) 
+
+summary(cox_ttt)
 
 cox_ttt <-coxph(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g) 
 
@@ -132,5 +140,6 @@ summary(cox_ttt)
 test.mydata <- cox.zph(cox_ttt, transform="km", global=TRUE )
 print(test.mydata)
 
-survreg(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g, dist='weibull',scale=1)
+toto<-survreg(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g, dist='weibull')
+plot(toto)
 ?survreg
