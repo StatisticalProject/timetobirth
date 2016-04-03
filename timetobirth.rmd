@@ -71,6 +71,12 @@ Les spermatozoide posséde pres de 113 values manquantes.  Evoluant de 1 à 156 
 
 Les taux de testoterones sont particulièrement mal renseigné avec près de 388 valeurs manquantes soit près de 92% de l'échantillon.
 
+```{r, echo=FALSE}
+boxplot(d2g~indic,data=d2g, main="Répartition par événement", xlab="Evénement", ylab="Jours")
+```
+
+La répartition des événements montrent que les censures sont plutot situé aprèe 150 jours. Les événements de fin de grosesse sont eux plutot situé aux alentour de 75 jours.
+
 ## Gestion des données manquantes
 On change les deux individus ayants des données de bmi manquante par NA.
 ```{r}
@@ -140,11 +146,13 @@ levels(d2g$spermQual)
 
 ```{r}
 fit <- survfit(Surv(d2g, indic) ~ 1, data = d2g) 
-plot(fit, lty = 2:3)
-
+plot(fit )
+title("Fonction de survie") 
+plot(fit, fun="cloglog") 
+title("Risque cumulé") 
 ```
-La courbe de survie decroit regulierement en fonction du nombre de jour. Notre fonction de survie s'arrete autour de 200 jours. Les données supérieures sont censurées.
-
+La courbe de survie décroit régulierement en fonction du nombre de jour. Notre fonction de survie s'arrete autour de 200 jours. Les censures du jeu de données sont plus nombreuses à partir de 150 jours. Eb dessous de 50 jours de grosesses, les événements sont font plus rare.
+Le risque cumulé commence par croitre fortement. Ce qui indique que les risques instannées d'interruption de grosses est extremement importante. Puis, la courbe montre rapidement une stabilisation ascendante permettant de constater que le risque instantanné ce stabilise à une valeur constante plus faible. 
 
 ```{r}
 colList<-c("red","blue","green","black")
@@ -155,7 +163,7 @@ title("Fonction de survie - BMI Femme")
 legend(130, .97, levels(d2g$bmiFQual), lty = 2:3,col=colList) 
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - BMI Femme") 
-legend(130, .97, levels(d2g$bmiFQual), lty = 2:3,col=colList) 
+legend(120, -1.17, levels(d2g$bmiFQual), lty = 2:3,col=colList) 
 
 ```
 Jusqu'a 100 jours et quelque soit l'indice de masse corporelle, il n'y a pas grande différence. Les courbes sont assez proche. Après 100 jours de grosses, les femmes, dont le BMI est plus important ont tendance à avoir  une survie plus longue. Au vu de la courbe des risque cumulé, on ne peut tenter un test du log rank pour voir si les courbes de survie sont identiques.
@@ -168,12 +176,12 @@ title("Fonction de survie - BMI Homme")
 legend(130, .97, levels(d2g$bmiHQual), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - BMI Homme") 
-legend(130, .97, levels(d2g$bmiHQual), lty = 2:3,col=colList)
+legend(120, -1.17, levels(d2g$bmiHQual), lty = 2:3,col=colList)
 
 
 ```
-La fonction met en évidence que le l'indice de masse corporel moyen [22-24] chez l'homme a une survie légèrement plus forte. Les courbes restantes sont paralleles et ne presume pas d'une forte différence.
-Les courbes de risque cumulés ne sont pas indiqué pour tester l'égalité des courbes de survie.
+La fonction met en évidence que le l'indice de masse corporel moyen [22-24] chez l'homme a une survie légèrement plus forte. Cependant, ce constat est plus nuancé en regardant la courbe des risques cumulés.Les courbes restantes sont paralleles et ne presume pas d'une forte différence.
+Les courbes de risque cumulés qui sont très chahuté,ne sont pas indiqué pour tester l'égalité des courbes de survie.
 
 
 
@@ -185,10 +193,10 @@ title("Fonction de survie - Alcool Femme")
 legend(130, .97, levels(d2g$alcFQual), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Alcool Femme") 
-legend(130, .97,levels(d2g$alcFQual), lty = 2:3,col=colList)
+legend(120, -1.17,levels(d2g$alcFQual), lty = 2:3,col=colList)
 
 ```
-On s'appercoit que les femmes ayant une alcoolemie tres faible, on une courbe se survie pendant la grosesse plus importante. Une l'acoolemie superieure a deux verres par semaine conduit à une coubre plus faible. La courbe de risaue cumulé fait apparaitre une non proportionnalité des courbes du nottament aux croisements entre les variables.
+On s'appercoit que les femmes ayant une alcoolemie plus forte (>6 verres), on une courbe se survie pendant la grosesse plus importante. Cela se traduit sur la courbe des risques cumulés par un risque instantanné plus faible aux alentours de 50 jours. Après 120 jours, les risques instantannés croient plus rapidement que les autres consomations. Une l'acoolemie inférieure a six verres par semaine conduit à une coubre plus faible. La courbe de risque cumulé fait apparaitre une non proportionnalité des courbes du nottament aux croisements entre les variables.
 
 
 
@@ -200,10 +208,10 @@ title("Fonction de survie - Alcool Homme")
 legend(130, .97,levels(d2g$alcHQual), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Alcool Homme") 
-legend(130, .97, levels(d2g$alcHQual), lty = 2:3,col=colList)
+legend(120, -1.17, levels(d2g$alcHQual), lty = 2:3,col=colList)
 
 ```
-Les courbes de survie sur l'alcoolemie des hommes sont tres proches. Le test du log rank n'est pas approprié au vue de des risques cumulés dont les courbes s'entrecroisent. On ne peut conclure à l'égalité des courbes de survie.
+Les courbes de survie sur l'alcoolemie des hommes sont tres proches. Le test du log rank n'est pas approprié au vue de des risques cumulés dont les courbes s'entrecroisent. On ne peut conclure à l'égalité des courbes de survie bien quels soient proche
 
 ```{r}
 #ageF
@@ -213,11 +221,10 @@ title("Fonction de survie - Age Femme")
 legend(130, .97, levels(d2g$ageFQual), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Age Femme") 
-legend(130, .97, levels(d2g$ageFQual), lty = 2:3,col=colList)
+legend(120, -1.17, levels(d2g$ageFQual), lty = 2:3,col=colList)
 
-survdiff(Surv(d2g, indic) ~ ageFQual, data = d2g)
 ```
-La fonction de survie des femmes d'age de 20 à 24 ans est legerement plus faible comparer aux ages superieur. Les courbes de risque cumulé et de fonction de survie sont paralleles et le test du log rank confirme cette hypothese graphique.
+La fonction de survie des femmes d'age de 24 à 26 ans est legerement plus faible comparer aux autres ages. Les courbes de risque cumulé et de fonction de survie sont très paralleles.
 
 
 ```{r}
@@ -228,9 +235,9 @@ title("Fonction de survie - Age Homme")
 legend(130, .97,  levels(d2g$ageHQual), lty = 2:3,colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Age Homme") 
-legend(130, .97, levels(d2g$ageHQual), lty = 2:3,colList)
+legend(120, -1.17, levels(d2g$ageHQual), lty = 2:3,colList)
 ```
-Les courbes de survie et de risque cumulé de l'age des hommes sont très proches et se croisent à de nombreux endroits. Le test du log rank n'étant pas forcement le plus indiqué dans ce cas de non respect de proportionnalité des risques, nous ne pouvons conclure à l'égalité des courbes de survie selon les ages. 
+Les courbes de survie et de risque cumulé de l'age des hommes sont très proches et se croisent à de nombreux endroits. Le test du log rank n'étant pas forcement le plus indiqué dans ce cas de non respect de proportionnalité des risques, nous ne pouvons conclure à l'égalité des courbes de survie selon les ages. Le risque instanné des hommes dont l'age est supérieur à 30 ans est très supérieur durant les 20 premiers jours de grossesse. Ensuite la courbe décroit et se mélange aux autres.  
 
 ```{r}
 #fumF
@@ -240,10 +247,10 @@ title("Fonction de survie - Fumeur Femme")
 legend(130, .97, c("Non fumeuse","Fumeuse"), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Fumeur Femme") 
-legend(130, .97, c("Non fumeuse","Fumeuse"), lty = 2:3,col=colList)
+legend(120, -1.17, c("Non fumeuse","Fumeuse"), lty = 2:3,col=colList)
 summary(fit)$table
 ```
-Les fumeuses ont un survie plus importante que les non fumeuses. L'écart s'agrandi en fonction du délai. Les risque sont presque paralleles avec quelques entrecroisements. 
+Les fumeuses ont un survie plus importante que les non fumeuses. L'écart s'agrandi en fonction du délai. Les courbes de risque cumulé sont très proche et presque paralleles avec quelques entrecroisements. 
 
 
 ```{r}
@@ -254,11 +261,11 @@ title("Fonction de survie - Fumeur Homme")
 legend(130, .97, c("Non fumeur","Fumeur"), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog") 
 title("Risque cumulé - Fumeur Homme") 
-legend(130, .97, c("Non fumeur","Fumeur"), lty = 2:3,col=colList)
+legend(120, -1.17, c("Non fumeur","Fumeur"), lty = 2:3,col=colList)
 survdiff(Surv(d2g, indic) ~ fumH, data = d2g)
 
 ```
-Comme pour les femmes les hommes fumeurs ont une courbe de survie légèremment plus importante. La courbe de risque paressant parrallele, on utilise le test du log rank qui nous permet de conclure à l'égalité des courbes de survie. 
+Comme pour les femmes les hommes fumeurs ont une courbe de survie légèremment plus importante. Les courbes de risque sont parrallèle avec un risque des non fumeurs plus important durant les 20 premiers jours de grosesse. 
 
 
 ```{r}
@@ -269,7 +276,7 @@ title("Fonction de survie - Sperm")
 legend(130, .97, levels(d2g$spermQual), lty = 2:3,col=colList)
 plot(fit, lty = 2:3,col=colList,fun="cloglog")
 title("Risque cumulé - Sperm")
-legend(130, .97, levels(d2g$spermQual), lty = 2:3,col=colList)
+legend(120, -1.17, levels(d2g$spermQual), lty = 2:3,col=colList)
 ```
 Les courbes de survie correspondant aux millions de spermes chez les hommes sont tres proche. Les fonctions de risque cumulées sont proche mais s'entrecroisent et ne permettent de valider une égalité des fonctions de survies. 
 
@@ -290,8 +297,10 @@ L'étude du mélange des critères des fumeuses et du nombre de boisson alcoolis
 # Conclusion
 
 # Modélisation
-
+Nous testons deux type de modèle. Un modèle paramétrique et un modèle à risque proportionnel (Cox).
+Pour chaque modèle nous faisons une sélection de variable en éliminant successivement les variables qui ont le mmoins d 'effet et qui ne sont pas significative.
 ## Modèle paramétrique
+Dans notre modèle paramétrique, nous inserons toutes nos variables excepté celle dont les données manquanttes sont en très grand nombre.. 
 ```{r}
 reg<-survreg(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g, dist='weibull')
 summary(reg)
@@ -384,6 +393,9 @@ You can also embed plots, for example:
 
 ```{r, echo=FALSE}
 plot(cars)
+
+boxplot(d2g~indic,data=d2g, main="Répartition par événement", xlab="Evénement", ylab="Jours")
+
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
