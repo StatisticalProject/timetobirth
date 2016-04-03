@@ -299,17 +299,47 @@ L'étude du mélange des critères des fumeuses et du nombre de boisson alcoolis
 # Modélisation
 Nous testons deux type de modèle. Un modèle paramétrique et un modèle à risque proportionnel (Cox).
 Pour chaque modèle nous faisons une sélection de variable en éliminant successivement les variables qui ont le mmoins d 'effet et qui ne sont pas significative.
+Le modèle paramétrique permettra de modéliser la fonction de survie. Le modèle de Cox quand a lui permettra la moélisation du risque instantannée.
 ## Modèle paramétrique
-Dans notre modèle paramétrique, nous inserons toutes nos variables excepté celle dont les données manquanttes sont en très grand nombre.. 
+Dans notre modèle paramétrique, nous inserons toutes nos variables excepté celle dont les données manquanttes sont en très grand nombre.
+
+On commencera par étudier la forme de la fonction de survie globale en essayant de la modéliser par une loi de weibull. Puis nous ajouterons les covariables afin d'ideintifier un modèle utilisable.
+
+```{r}
+fit <- survfit(Surv(d2g, indic) ~ 1, data = d2g) 
+plot(fit,ylim=c(0.05,1),xlab="Délai de grosesse (jours)", ylab="Survie")
+reg<-survreg(Surv(d2g, indic) ~ 1, data = d2g,
+             dist="weibull")
+curve(exp(-(exp(-reg$coef[1]) * x)^(1/reg$scale)),
+      col="blue", add=TRUE)
+lines(predict(reg,d2g,type="quantile",col="red"))
+title("Fonction de survie - modèle de weibull.")
+summary(reg)
+
+```
+Le choix du modèle weibull conforte l'idée que la loi exponentielle n'est pas meilleure. Le scale de 0.73 qui est à  1 pour une loi exponentielle, nous précise cette finalité.
+
 ```{r}
 reg<-survreg(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g, dist='weibull')
 summary(reg)
 ```
+L'intercepte est le paramètre le plus significatif.
+L'effet des covariables est faible. Seul la variable fumeuse possède un effet significatif.
+La valeur fumeuse de 0.257 qui mis à l'exponentiel donne 1.29, permet de quantifier que la fumeuse à une survie 29% plus importante qu'une non fumeuse.
+
+
 ### Sélection de variables
+Pour améliorer le modèle, une sélection de variable est recherchée par supression paramètre après paramètre. 
+
+
 ```{r}
 reg<-survreg(Surv(d2g,indic)  ~ bmiH+fumF , d2g, dist='weibull')
 summary(reg)
 ```
+Le résultat de cette étape extrait deux variables que sont l'indice de masse corporelle des hommes et la variable fumeuse.
+La valeur fumeuse de 0.277 qui mis à l'exponentiel donne 1.32, permet d'indiquer que la une survie d'une fumeuse est plus importante de 32% par rapport à une non fumeuse.
+La variable indice de masse corporelle de 0.033 qui mis à l'exponentiel donne 1.034, permet de dire qu'à chaque unité de cette mesure la survie augmente de 3%.
+
 
 ## Modèle à risque proportionnel
 ```{r}
