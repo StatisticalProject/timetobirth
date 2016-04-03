@@ -152,6 +152,7 @@ plot(fit, fun="cloglog")
 title("Risque cumulé") 
 ```
 La courbe de survie décroit régulierement en fonction du nombre de jour. Notre fonction de survie s'arrete autour de 200 jours. Les censures du jeu de données sont plus nombreuses à partir de 150 jours. Eb dessous de 50 jours de grosesses, les événements sont font plus rare.
+Le risque instantané, traduit le risque de présenter l'événement sur un intervalle de temps infinitésimal, conditionnellement au fait de ne pas l'avoir présenté auparavant. On représente ce risque par la courbe de risque cumulé. 
 Le risque cumulé commence par croitre fortement. Ce qui indique que les risques instannées d'interruption de grosses est extremement importante. Puis, la courbe montre rapidement une stabilisation ascendante permettant de constater que le risque instantanné ce stabilise à une valeur constante plus faible. 
 
 ```{r}
@@ -323,6 +324,7 @@ Le choix du modèle weibull conforte l'idée que la loi exponentielle n'est pas 
 reg<-survreg(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g, dist='weibull')
 summary(reg)
 ```
+La probabilité du test du Khi² est signicatif pour valider le modèle. 
 L'intercepte est le paramètre le plus significatif.
 L'effet des covariables est faible. Seul la variable fumeuse possède un effet significatif.
 La valeur fumeuse de 0.257 qui mis à l'exponentiel donne 1.29, permet de quantifier que la fumeuse à une survie 29% plus importante qu'une non fumeuse.
@@ -342,13 +344,20 @@ La variable indice de masse corporelle de 0.033 qui mis à l'exponentiel donne 1
 
 
 ## Modèle à risque proportionnel
+Le modèle de Cox permet de modéliser l'effet des covariables sur les risques instantannés. Cela permet de modèliser toutes les personnes à risque qui n'ont pas encore eut l'événement de l'arret de grosesse.
+
 ```{r}
 cox <-coxph(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g) 
 
 summary(cox)
 ```
+De toutes les covariables, seule la variable fumeuse comme dans le modèle paramétrique à un effet significatif.
+Etre fumeuse permet de réduire le risque instantané d'interruption de grosesse de 28%.
+Les probabilités de validité du modèle que sont les tests de Wald, de Maximum de vraisemblance et du score sont tous positives et inférieur à 5%.
 
 ### Vérification de l'hypotèse de proportionnalité 
+Un modèle de cox demande un certain nombre de condition pour être utiliser comme l'hypothès de proportionnalité qui n'est pas toujours facile à identifier.
+
 ```{r}
 #vérification HP
 coxzph <- cox.zph(cox, transform="km", global=TRUE )
@@ -356,76 +365,19 @@ plot(coxzph[1]); abline (h =0 , col =" blue ")
 
 print(coxzph)
 ```
+La représentation des résidus de schoenfeld, permet de mettre en évidence l'indépendance entre les résidus et le temps ce qui valide l'hypothèse de proportionnalité.
+
+Toutes les variables sont significatifs sur la proportionnalité des risques. Le test Global renforce ce résultat de proportionnalité des risques. Notre modèle de Cox est valide. Il reste encore à l'améliorer et à le simplifier.
 
 ### Sélection de variables
+
+L'amélioration du modèle est fait par une sélection de variable par supression de paramètre après paramètre. 
 ```{r}
-#coxph(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g)
-#coxph(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageH+sperm , d2g)
-#coxph(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+ageH+sperm , d2g)
-#coxph(Surv(d2g,indic)  ~ bmiF + bmiH+alcH+fumF+ageH+sperm , d2g)
-#coxph(Surv(d2g,indic)  ~ bmiF + bmiH+alcH+fumF+ageH , d2g)
-#coxph(Surv(d2g,indic)  ~ bmiF + bmiH+alcH+fumF , d2g)
-#coxph(Surv(d2g,indic)  ~ bmiH+alcH+fumF , d2g)
-#coxph(Surv(d2g,indic)  ~ bmiH+fumF , d2g)
 cox<-coxph(Surv(d2g,indic)  ~ fumF , d2g)
+
+summary(cox)
 ```
+Cette sélection de variable montre une seule variable significative: la variable fumeuse. Au contraire du modèle paramétrique, la variable d'indice de masse corporelle des hommees qui a été la dernière variable à être retiré, n 'a pas été suffisamment significative pour être gardé.
+Ce résultat passe l'effet de la variable de 28 à 29 % de la réduction du risque instantané lorsque c'est une fumeuse.
 
-#coxph(Surv(d2g,indic)  ~ fumAlcF, d2g)
-
-```{r}
-summary(survreg(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g, dist='weibull'))
-summary(survreg(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageH+sperm , d2g, dist='weibull'))
-summary(survreg(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+ageH+sperm , d2g, dist='weibull'))
-summary(survreg(Surv(d2g,indic)  ~ bmiF + bmiH+alcH+fumF+ageH+sperm , d2g, dist='weibull'))
-summary(survreg(Surv(d2g,indic)  ~ bmiF + bmiH+fumF+ageH+sperm , d2g, dist='weibull'))
-summary(survreg(Surv(d2g,indic)  ~ bmiH+fumF+ageH+sperm , d2g, dist='weibull'))
-summary(survreg(Surv(d2g,indic)  ~ bmiH+fumF+ageH , d2g, dist='weibull'))
-summary(survreg(Surv(d2g,indic)  ~ bmiH+fumF , d2g, dist='weibull'))
-
-summary(survreg(Surv(d2g,indic)  ~ fumAlcF , d2g, dist='weibull'))
-
-d2g$fumAlcF=as.factor(paste(d2g$fumF,d2g$alcFQual,' '))
-d2g$fumFBmiH=as.factor(paste(d2g$fumF,d2g$bmiHQual,' '))
-d2g$fumFBmiF=as.factor(paste(d2g$fumF,d2g$bmiFQual,' '))
-d2g$fumAgeF=as.factor(paste(d2g$fumF,d2g$ageFQual,' '))
-
-d2g$fumAlcBmiF=as.factor(paste(d2g$fumAlcF,d2g$bmiFQual,' '))
-d2g$fumAlcBmiAgeF=paste(d2g$fumAlcBmiF,d2g$ageFQual,' ')
-
-summary(survreg(Surv(d2g,indic)  ~ bmiH+fumF+fumAlcF , d2g, dist='weibull'))
-
-summary(survreg(Surv(d2g,indic)  ~ bmiH+fumF+fumAlcF , d2g, dist='weibull'))
-
-fit <- survfit(Surv(d2g, indic) ~ fumAlcF, data = d2g) 
-plot(fit, lty = 2:8,col=colList) 
-title("Fonction de survie - Sperm")
-legend(130, .97, levels(d2g$fumAlcF), lty = 2:8,col=colList)
-
-fit <- survfit(Surv(d2g, indic) ~ fumFBmiH, data = d2g) 
-plot(fit, lty = 2:30,col=colList) 
-title("Fonction de survie - Sperm")
-legend(130, .97, levels(d2g$fumFBmiH), lty = 2:30,col=colList)
-
-fit <- survfit(Surv(d2g, indic) ~ fumFBmiF, data = d2g) 
-plot(fit, lty = 2:30,col=colList) 
-title("Fonction de survie - Sperm")
-legend(130, .97, levels(d2g$fumFBmiF), lty = 2:30,col=colList)
-
-fit <- survfit(Surv(d2g, indic) ~ fumAgeF, data = d2g) 
-plot(fit, lty = 2:30,col=colList) 
-title("Fonction de survie - Sperm")
-legend(130, .97, levels(d2g$fumAgeF), lty = 2:30,col=colList)
-
-
-```
-
-You can also embed plots, for example:
-
-```{r, echo=FALSE}
-plot(cars)
-
-boxplot(d2g~indic,data=d2g, main="Répartition par événement", xlab="Evénement", ylab="Jours")
-
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#Conclusion
