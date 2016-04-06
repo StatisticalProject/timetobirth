@@ -5,22 +5,12 @@ date: "13 mars 2016"
 output: html_document
 ---
 
-```{r}
-library(survival)
-```
-
-## Chargement des données
-```{r}
-d2g<-read.csv("d2g.txt", header = TRUE, sep = " ",na.strings = "<NA>")
-d2g[d2g$sperm == "NA",]$sperm=NA
-d2g$sperm=as.numeric(d2g$sperm)
-d2g[d2g$testo == "NA",]$testo=NA
-d2g$fumF=as.factor(d2g$fumF)
-d2g$fumH=as.factor(d2g$fumH)
-
-d2g$testo=as.numeric(gsub("NA", "", d2g$testo))
-
-```
+# Introduction
+Le projet qui est exposé dans ce document porte sur les délais de grossesse, dont une partie est censurée.
+Le contenu métier de ces données n'est pas très bien connu et pourra paraitre deroutant pour un non expert du domaine. L'étude sera faite sans poser d'appriori sur les événements arrivant pendant la grossesse.  
+Le début de l'étude essaiera d'analyser les données selon des méthodes classiques puis par des méthodes adaptées a ce genre de données de délai avec censure. Nous verrons de surprennantes spécificités lors de cette analyse.  
+Nous continuerons ensuite par essayer de trouver un modèle adéquate à nos données. Deux types de modèle seront étudiés : un modèle paramétrique et un modèle à risque proportionnelle. Ces deux modèles quoique travaillant sur des aspects différent permettrons de comprendre qu'ils sont très similaires dans leur composition.
+Pour simplifier les modèles,il sera effectué une sélection de variable. 
 
 ## Description des données
 Les données décrivent le délai de grosesse selon les covariables suivantes:
@@ -38,6 +28,26 @@ Les données décrivent le délai de grosesse selon les covariables suivantes:
 - ageH   : age en année 
 - sperm  : spermatozoïdes en million 
 - testo  : niveau de testosterone
+
+## Chargement de la librairie survival 
+```{r}
+library(survival)
+```
+
+## Chargement des données
+Les données sont chargées et on corrige les données manquante ou les type de données comme numérique ou facteur.
+```{r}
+d2g<-read.csv("d2g.txt", header = TRUE, sep = " ",na.strings = "<NA>")
+d2g[d2g$sperm == "NA",]$sperm=NA
+d2g$sperm=as.numeric(d2g$sperm)
+d2g[d2g$testo == "NA",]$testo=NA
+d2g$fumF=as.factor(d2g$fumF)
+d2g$fumH=as.factor(d2g$fumH)
+
+d2g$testo=as.numeric(gsub("NA", "", d2g$testo))
+
+```
+
 
 ##Sommaire statistique des variables
 ```{r}
@@ -99,7 +109,7 @@ densityplot(imp1)
 Comme il n'y pas que deux données d'imputation de données pour les variables bmi, on ne visualisera pas leur distribution.
 
 Au contraire du nombre de spermatozoide, ou les variables manquantes sont tres frequentes.
-Lorsque l'on regarde la distribution des spermatozoide. Les nouvelles données ont une distribution proche des données originales.
+Lorsque l'on regarde la distribution des spermatozoides, les nouvelles données ont une distribution proche des données originales.
 
 Puis, on impute les données sur notre jeux original.
 ```{r}
@@ -123,7 +133,7 @@ table(d2g$fumF,d2g$fumH)
 ```
 La proportion de non fumeur est plus importante.
 
-## Analyse des fonctions de survie
+## Analyse des fonctions de survie et de risque cumulé 
 
 On commence par decoupé nos variables quantitatives en variables qualitative de facon équitable en prenant les quantiles (<25%,25%-50%,50%-75% et >75%).
 
@@ -295,9 +305,9 @@ legend(110, -1, levels(d2g$fumAlcF), lty = 2:10,col=colList)
 ```
 L'étude du mélange des critères des fumeuses et du nombre de boisson alcoolisé pour les femmes permet de mettre en évidence un fort effet séparateur. On peut voir que les femmes non fumeuses et peu alcoolisées (0, 2-6) sont à l'opposé des femmes fumeuses et fortement alcoolisées (1 , 6-39 ). Les vingt cinq premiers jours sont peu différencier puis l'écart se creuse rapidement jusqu'a 75 jours pour resté assez parallèle jusqu'au dernier jours du jeu de données. La courbe du risque cumulé a de nombreux croisements et en même temps très parallèle rendant l'analyse très difficile.
 
-# Conclusion
 
 # Modélisation
+Après les contestations effectuées précédemment, nous entrons dans la partie modèlisation.
 Nous testons deux type de modèle. Un modèle paramétrique et un modèle à risque proportionnel (Cox).
 Pour chaque modèle nous faisons une sélection de variable en éliminant successivement les variables qui ont le mmoins d 'effet et qui ne sont pas significative.
 Le modèle paramétrique permettra de modéliser la fonction de survie. Le modèle de Cox quand a lui permettra la moélisation du risque instantannée.
@@ -381,3 +391,18 @@ Cette sélection de variable montre une seule variable significative: la variabl
 Ce résultat passe l'effet de la variable de 28 à 29 % de la réduction du risque instantané lorsque c'est une fumeuse.
 
 #Conclusion
+
+Après avoir analysé les données en regardant aussi bien le coté Survie que le coté Risque cumulé, nous avons put appréhender les problématique de ces données. Nous avons trouver des données manquantes que nous avons put corrigé autant que possible. 
+Nous avons pu remarquer, que les censures et les événements n'étaient pas organiser de la même facon. Nous avons pu remarquer aussi que le risque instanné était globalement très important durant les premiers jours de grossesse pour se réduire fortement par la suite. Et que la courbe survie avait une courbe descendante assez linéaire.
+Nous avon remarqué aussi que les variables dont certaines différences pouvaient apparaitre étaient le BMI des hommes, l'alcool chez les femmes, l'age des femmes, les fumeuses et fumeurs. 
+
+La modélisation a permis de mieux estimer les effets des variables et a permis de nuancer fortement les analyses des courbe de survie et des risques cumulés. Ainsi par exemple, l'effet de l'alcool n'est pas paru aussi significatif qu'espéré.
+
+La modélisation paramétrique a permis de mettre en oeuvre un loi de weibull. On a pu estimé très précisément l'effet de chaque variable sur la survie du délai de grossesse. La sélection des variables de ce modèle a permis de choisir le bmi des hommes et les femmes fumeuse comme éléments déterminant.
+
+La modèlisation à risque proportionnelle a permis de mesurer précisement l'effet de chaque variable sur le risque intantanné. Le résultat a été conforté sur le fait que le modèle respectait l'hypothèse de proportionnalité. La sélection de variable y a été plus stricte en ne retenant que les femmes fumeuses.
+
+
+
+
+
