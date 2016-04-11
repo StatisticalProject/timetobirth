@@ -6,11 +6,9 @@ output: html_document
 ---
 
 # Introduction
-Le projet qui est exposé dans ce document porte sur les délais de grossesse, dont une partie est censurée.
-Le contenu métier de ces données n'est pas très bien connu et pourra paraitre deroutant pour un non expert du domaine. L'étude sera faite sans poser d'appriori sur les événements arrivant pendant la grossesse.  
-Le début de l'étude essaiera d'analyser les données selon des méthodes classiques puis par des méthodes adaptées a ce genre de données de délai avec censure. Nous verrons de surprennantes spécificités lors de cette analyse.  
-Nous continuerons ensuite par essayer de trouver un modèle adéquate à nos données. Deux types de modèle seront étudiés : un modèle paramétrique et un modèle à risque proportionnelle. Ces deux modèles quoique travaillant sur des aspects différent permettrons de comprendre qu'ils sont très similaires dans leur composition.
-Pour simplifier les modèles,il sera effectué une sélection de variable. 
+Le projet en langage R qui est exposé dans ce document porte sur les délais de grossesse, dont une partie des données est censurée. Le contenu métier de ces données n’est pas très bien connu et pourra paraitre déroutant pour un non expert du domaine. L’étude sera faite sans poser d’apriori sur les événements arrivant pendant la grossesse.
+Le début de l’étude essaiera d’analyser les données selon des méthodes classiques puis par des méthodes adaptées à ce genre de données de délai avec censure. Nous verrons de surprenantes spécificités lors de cette analyse.
+Nous continuerons ensuite par essayer de trouver un modèle adéquat à nos données. Deux types de modèle seront étudiés : un modèle paramétrique et un modèle à risque proportionnel. Ces deux modèles quoique travaillant sur des aspects différents permettront de voir leur similarité. Pour simplifier les modèles, il sera effectué une sélection de variable.
 
 ## Description des données
 Les données décrivent le délai de grosesse selon les covariables suivantes:
@@ -35,7 +33,7 @@ library(survival)
 ```
 
 ## Chargement des données
-Les données sont chargées et on corrige les données manquante ou les type de données comme numérique ou facteur.
+Les données sont chargées et on corrige les données manquantes ou les type de données comme numérique ou facteur.
 ```{r}
 d2g<-read.csv("d2g.txt", header = TRUE, sep = " ",na.strings = "<NA>")
 d2g[d2g$sperm == "NA",]$sperm=NA
@@ -55,40 +53,34 @@ nrow(d2g)
 summary(d2g)
 ```
 
-Le délai de grossesse (d2g) s'étale de 15 à 195 jours. Il y a 40% de censure (indic). Nous avons certainement à faire a une population plutot a risque de grossese prématuré. Le délai de grosses normal étant de 9 mois,plus de 260 jours.
+Le délai de grossesse (d2g) s’étale de 15 à 195 jours. Il y a 40% de censure (indic). Le délai de grossesse normal est de 9 mois(plus de 260 jours).
+Le bmi des femmes et des hommes contient une incohérence sur la valeur minimum -1111.11 qui est bien entendu impossible et doit représenter une donnée manquante.
 
-Le bmi des femmes et des hommes contient une incohérence sur la valeur minimum -1111.11 qui est bien entendu impossible et doit représenté une donnée manquante.
 ```{r}
 nrow(d2g[d2g$bmiF<0,])
 nrow(d2g[d2g$bmiH<0,])
 nrow(d2g[d2g$bmiH<0&d2g$bmiF<0,])
 ```
-Seulement deux indivdus sont concernés pour le bmi des femmes et des hommes.
-En les enlevement, le sommaire est:
+Seulement deux individus sont concernés pour le bmi des femmes et des hommes. En les enlèvent, le sommaire devient :
 ```{r}
 summary(d2g[d2g$bmiF>0,]$bmiF)
 summary(d2g[d2g$bmiH>0,]$bmiH)
 ```
-Le bmi des hommes dans l'échantillon est plus important aussi sur la valeur minimum, la médiane , la moyenne ou la valeur maximale.
-
-Le nombre de boisson alcoolisé(alcF et alcH) est très largement supérieur pour les hommes. Il y a dans les deux sexes des quantités minimum à 0. Les hommes peuvent consommer jusqu'a 84 boissons par semaine ce qui est très important.
-
-Il y a 29 % de fumeur femme(fumF) et 31 % d'hommes(fumH) dans cet échantillon.
-
-L'age des hommes et des femmes est sensiblement comparable. L'age minimum est de 20 ans pour les femmes et 18 pour les hommes. L'age maximale est de 35 ans pour les femmes et 37 ans pour les hommes. La moyenne quant a elle est de 26 pour les femmes et 28 ans pour les hommes.
-
-Les spermatozoide posséde pres de 113 values manquantes.  Evoluant de 1 à 156 millions de spermatozoides, il y a en moyenne 85 millions de spermatozoides.
-
-Les taux de testoterones sont particulièrement mal renseigné avec près de 388 valeurs manquantes soit près de 92% de l'échantillon.
+Le bmi des hommes dans l’échantillon est plus important aussi bien sur la valeur minimale, la médiane, la moyenne ou la valeur maximale.
+Le nombre de boisson alcoolisé (alcF et alcH) est très largement supérieur pour les hommes. Il y a dans les deux sexes des quantités minimales à 0. Les hommes peuvent consommer jusqu’a 84 boissons par semaine ce qui est très important.
+Il y a 29 % de fumeuses (fumF) et 31 % de fumeurs (fumH) dans cet échantillon.
+L’âge des hommes et des femmes est sensiblement comparable. L’âge minimum est de 20 ans pour les femmes et 18 pour les hommes. L’âge maximal est de 35 ans pour les femmes et 37 ans pour les hommes. La moyenne quant à elle est de 26 pour les femmes et 28 ans pour les hommes.
+Les spermatozoïdes possèdent près de 113 valeurs manquantes. Evoluant de 1 à 156 millions de spermatozoïdes, il y a en moyenne 85 millions de spermatozoïdes.
+Les taux de testostérone sont particulièrement mal renseignés avec près de 388 valeurs manquantes soit près de 92% de l’échantillon.
 
 ```{r, echo=FALSE}
 boxplot(d2g~indic,data=d2g, main="Répartition par événement", xlab="Evénement", ylab="Jours")
 ```
 
-La répartition des événements montrent que les censures sont plutot situé après 150 jours. Les événements de fin de grosesse sont eux plutot situé aux alentour de 75 jours. On peut dire que les événement et les censures sont significativement séparé, permettant de dire que les censures sont de type plutôt à droite et quels sont quasi systématiques aprés 150 jours. 
+La répartition des événements montre que les censures sont plutôt situées après 150 jours. Les événements de fin de grossesse sont eux plutôt situés aux alentours de 75 jours. On peut dire que les événements et les censures sont significativement séparés, permettant de dire que les censures sont de type plutôt à droite et qu’elles sont quasi systématiques après 150 jours.
 
 ## Gestion des données manquantes
-On change les deux individus ayants des données de bmi manquante par NA.
+Les taux de testostérone étant très mal renseignés, on enlèvera la variable pendant l’analyse.On change les deux individus ayants des données de bmi manquante par NA.
 ```{r}
 d2g[d2g$bmiH<0,]$bmiH<-NA
 d2g[d2g$bmiF<0,]$bmiF<-NA
@@ -106,12 +98,8 @@ imp1<-mice(d2g[,c(2,4,5,6,7,10,11,12)],m=1,seed=500)
 densityplot(imp1)
 
 ```
-Comme il n'y pas que deux données d'imputation de données pour les variables bmi, on ne visualisera pas leur distribution.
-
-Au contraire du nombre de spermatozoide, ou les variables manquantes sont tres frequentes.
-Lorsque l'on regarde la distribution des spermatozoides, les nouvelles données ont une distribution proche des données originales.
-
-Puis, on impute les données sur notre jeux original.
+Le nombre de données à imputer pour la variable bmi est faible et rendra un rendu où les deux courbes se chevauchent.
+Au contraire du nombre de spermatozoïde, ou les variables manquantes sont très fréquentes. Lorsque l’on regarde la distribution des spermatozoïdes, les nouvelles données ont une distribution proche des données originales.Puis, on impute les données sur notre jeux original.
 ```{r}
 comp<-complete(imp1, 1)
 d2g$sperm<-comp$sperm
@@ -124,14 +112,14 @@ d2g$bmiF<-comp$bmiF
 ```{r}
 cor(d2g[,c(2,4,5,6,7,10,11,12)])
 ```
-Il n'y a aucune forte correlation entre nos variables. La corrélation la plus forte est sur le nombre de boisson alcoolisé par semaine entre les hommes et les femmes.
+Il n’y a aucune forte corrélation entre nos variables. La corrélation la plus forte de 0.48 est sur le nombre de boisson alcoolisé par semaine entre les hommes et les femmes.
 
 ## Variables qualitatives
 
 ```{r}
 table(d2g$fumF,d2g$fumH)
 ```
-La proportion de non fumeur est plus importante.
+La proportion de non-fumeur est plus importante dans le jeu de donnée.
 
 ## Analyse des fonctions de survie et de risque cumulé 
 
@@ -153,7 +141,7 @@ levels(d2g$ageHQual)
 d2g$spermQual <- cut(d2g$sperm,breaks=quantile(d2g$sperm),include.lowest=TRUE)
 levels(d2g$spermQual)
 ```
-
+L’alcoolémie des femmes est coupée en trois morceau. La moitié des femmes ne consomme aucun alcool.
 ```{r}
 fit <- survfit(Surv(d2g, indic) ~ 1, data = d2g) 
 plot(fit )
@@ -161,9 +149,7 @@ title("Fonction de survie")
 plot(fit, fun="cloglog") 
 title("Risque cumulé") 
 ```
-La courbe de survie décroit régulierement en fonction du nombre de jour. Notre fonction de survie s'arrete autour de 200 jours. Les censures du jeu de données sont plus nombreuses à partir de 150 jours. Eb dessous de 50 jours de grosesses, les événements sont font plus rare.
-Le risque instantané, traduit le risque de présenter l'événement sur un intervalle de temps infinitésimal, conditionnellement au fait de ne pas l'avoir présenté auparavant. On représente ce risque par la courbe de risque cumulé. 
-Le risque cumulé commence par croitre fortement. Ce qui indique que les risques instannées d'interruption de grosses est extremement importante. Puis, la courbe montre rapidement une stabilisation ascendante permettant de constater que le risque instantanné ce stabilise à une valeur constante plus faible. 
+La courbe de survie décroit régulièrement en fonction du nombre de jour. Notre fonction de survie s’arrête autour de 200 jours. Les censures du jeu de données sont plus nombreuses à partir de 150 jours. En dessous de 50 jours de grossesse, les événements sont plus rares. Le risque instantané traduit le risque de présenter l’événement sur un intervalle de temps infinitésimal, conditionnellement au fait de ne pas l’avoir présenté auparavant. On représente ce risque par la courbe de risque cumulé. Le risque cumulé commence par croître fortement et les risques instantanés d’interruption de grossesse sont extrêmement importants. Puis, la courbe montre rapidement une stabilisation ascendante permettant de constater que le risque instantané se stabilise à une valeur constante plus faible. 
 
 ```{r}
 colList<-c("red","blue","green","black")
@@ -177,7 +163,7 @@ title("Risque cumulé - BMI Femme")
 legend(110, -1.17, levels(d2g$bmiFQual), lty = 2:3,col=colList) 
 
 ```
-Jusqu'a 100 jours et quelque soit l'indice de masse corporelle, il n'y a pas grande différence. Les courbes sont assez proche. Après 100 jours de grosses, les femmes, dont le BMI est plus important ont tendance à avoir  une survie plus longue. Au vu de la courbe des risque cumulé, on ne peut tenter un test du log rank pour voir si les courbes de survie sont identiques.
+Jusqu’à 100 jours et quel que soit l’indice de masse corporelle, il n’y a pas grande différence. Les courbes sont assez proches. Après 100 jours de grossesse, les femmes, dont le BMI est plus important ont tendance à avoir une survie plus longue. Au vu de la courbe des risques cumulé, on ne peut pas tenter un test du log rank pour voir si les courbes de survie sont identiques.
 
 ```{r}
 #bmiH
@@ -191,8 +177,7 @@ legend(110, -1.17, levels(d2g$bmiHQual), lty = 2:3,col=colList)
 
 
 ```
-La fonction met en évidence que le l'indice de masse corporel moyen [22-24] chez l'homme a une survie légèrement plus forte. Cependant, ce constat est plus nuancé en regardant la courbe des risques cumulés.Les courbes restantes sont paralleles et ne presume pas d'une forte différence.
-Les courbes de risque cumulés qui sont très chahuté,ne sont pas indiqué pour tester l'égalité des courbes de survie.
+La fonction met en évidence que l’indice de masse corporel moyen [22-24] chez l’homme a une survie légèrement plus forte. Cependant, ce constat est plus nuancé en regardant la courbe des risques cumulés. Les courbes restantes sont parallèles et ne présume pas d’une forte différence. Les courbes de risque cumulés qui sont très chahutées, ne sont pas indiquées pour tester l’égalité des courbes de survie.
 
 
 
@@ -207,7 +192,7 @@ title("Risque cumulé - Alcool Femme")
 legend(120, -1.17,levels(d2g$alcFQual), lty = 2:3,col=colList)
 
 ```
-On s'appercoit que les femmes ayant une alcoolemie plus forte (>6 verres), on une courbe se survie pendant la grosesse plus importante. Cela se traduit sur la courbe des risques cumulés par un risque instantanné plus faible aux alentours de 50 jours. Après 120 jours, les risques instantannés croient plus rapidement que les autres consomations. Une l'acoolemie inférieure a six verres par semaine conduit à une coubre plus faible. La courbe de risque cumulé fait apparaitre une non proportionnalité des courbes du nottament aux croisements entre les variables.
+On s’aperçoit que les femmes ayant une alcoolémie plus forte (>6 verres), ont une courbe de survie pendant la grossesse plus importante. Cela se traduit sur la courbe des risques cumulés par un risque instantané plus faible aux alentours de 50 jours. Après 120 jours, les risques instantanés croient plus rapidement que les autres consommations.ne alcoolémie inférieure a six verres par semaine conduit à une courbe plus faible. La courbe de risque cumulé fait apparaitre une non proportionnalité des courbes due notamment aux croisements entre les variables.
 
 
 
@@ -222,7 +207,7 @@ title("Risque cumulé - Alcool Homme")
 legend(120, -1.17, levels(d2g$alcHQual), lty = 2:3,col=colList)
 
 ```
-Les courbes de survie sur l'alcoolemie des hommes sont tres proches. Le test du log rank n'est pas approprié au vue de des risques cumulés dont les courbes s'entrecroisent. On ne peut conclure à l'égalité des courbes de survie bien quels soient proche
+Les courbes de survie sur l’alcoolémie des hommes sont très proches. Le test du log rank n’est pas approprié au vu des risques cumulés dont les courbes s’entrecroisent. On ne peut conclure à l’égalité des courbes de survie bien qu’elles soient proche.
 
 ```{r}
 #ageF
@@ -235,7 +220,7 @@ title("Risque cumulé - Age Femme")
 legend(110, -1.17, levels(d2g$ageFQual), lty = 2:3,col=colList)
 
 ```
-La fonction de survie des femmes d'age de 24 à 26 ans est legerement plus faible comparer aux autres ages. Les courbes de risque cumulé et de fonction de survie sont très paralleles.
+La fonction de survie des femmes d’âge de 24 à 26 ans est légèrement plus faible comparer aux autres âges. Les courbes de risque cumulé et de fonction de survie sont très parallèles.
 
 
 ```{r}
@@ -248,7 +233,7 @@ plot(fit, lty = 2:3,col=colList,fun="cloglog")
 title("Risque cumulé - Age Homme") 
 legend(100, -1.17, levels(d2g$ageHQual), lty = 2:3,colList)
 ```
-Les courbes de survie et de risque cumulé de l'age des hommes sont très proches et se croisent à de nombreux endroits. Le test du log rank n'étant pas forcement le plus indiqué dans ce cas de non respect de proportionnalité des risques, nous ne pouvons conclure à l'égalité des courbes de survie selon les ages. Le risque instanné des hommes dont l'age est supérieur à 30 ans est très supérieur durant les 20 premiers jours de grossesse. Ensuite la courbe décroit et se mélange aux autres.  
+Les courbes de survie et de risque cumulé de l’âge des hommes sont très proches et se croisent à de nombreux endroits. Le test du log rank n’étant pas forcement le plus indiqué dans ce cas de non-respect de proportionnalité des risques, nous ne pouvons conclure à l’égalité des courbes de survie selon les âges. Le risque instantané des hommes dont l’âge est supérieur à 30 ans est très supérieur durant les 20 premiers jours de grossesse. Ensuite la courbe décroit et se mélange aux autres.  
 
 ```{r}
 #fumF
@@ -261,7 +246,7 @@ title("Risque cumulé - Fumeur Femme")
 legend(90, -1.17, c("Non fumeuse","Fumeuse"), lty = 2:3,col=colList)
 summary(fit)$table
 ```
-Les fumeuses ont un survie plus importante que les non fumeuses. L'écart s'agrandi en fonction du délai. Les courbes de risque cumulé sont très proche et presque paralleles avec quelques entrecroisements. 
+Les fumeuses ont une survie plus importante que les non fumeuses. L’écart s’agrandit en fonction du délai. Les courbes de risque cumulé sont très proches et presque parallèles avec quelques entrecroisements.
 
 
 ```{r}
@@ -276,7 +261,7 @@ legend(100, -1.17, c("Non fumeur","Fumeur"), lty = 2:3,col=colList)
 survdiff(Surv(d2g, indic) ~ fumH, data = d2g)
 
 ```
-Comme pour les femmes les hommes fumeurs ont une courbe de survie légèremment plus importante. Les courbes de risque sont parrallèle avec un risque des non fumeurs plus important durant les 20 premiers jours de grosesse. 
+Comme pour les femmes les hommes fumeurs ont une courbe de survie légèrement plus importante. Les courbes de risque cumulé sont parallèles avec un risque instantané pour les non-fumeurs plus important durant les 20 premiers jours de grossesse.
 
 
 ```{r}
@@ -289,7 +274,7 @@ plot(fit, lty = 2:3,col=colList,fun="cloglog")
 title("Risque cumulé - Sperm")
 legend(110, -1.17, levels(d2g$spermQual), lty = 2:3,col=colList)
 ```
-Les courbes de survie correspondant aux millions de spermes chez les hommes sont tres proche et très chahutés. Les fonctions de risque cumulées sont proche mais s'entrecroisent et ne permettent de valider une égalité des fonctions de survies. Il apparait que les quantités de sperme in férieur à 54 millions , ont un risque instantanné plus faible les 50 premiers jours de grosesse.
+Les courbes de survie correspondant aux millions de spermes chez les hommes sont très proches et très chahutées. Les fonctions de risque cumulé sont proches mais s’entrecroisent et ne permettent de valider une égalité des fonctions de survies. Il apparait que les quantités de sperme inférieur à 54 millions, ont un risque instantané plus faible les 50 premiers jours de grossesse.
 
 ```{r}
 #fumF & alcF Croisement de facteur
@@ -303,18 +288,14 @@ plot(fit, lty = 2:10,col=colList,fun="cloglog")
 title("Risque cumulé - Fumeuse/Alcool des femmes")
 legend(110, -1, levels(d2g$fumAlcF), lty = 2:10,col=colList)
 ```
-L'étude du mélange des critères des fumeuses et du nombre de boisson alcoolisé pour les femmes permet de mettre en évidence un fort effet séparateur. On peut voir que les femmes non fumeuses et peu alcoolisées (0, 2-6) sont à l'opposé des femmes fumeuses et fortement alcoolisées (1 , 6-39 ). Les vingt cinq premiers jours sont peu différencier puis l'écart se creuse rapidement jusqu'a 75 jours pour resté assez parallèle jusqu'au dernier jours du jeu de données. La courbe du risque cumulé a de nombreux croisements et en même temps très parallèle rendant l'analyse très difficile.
+L’étude du mélange des critères des fumeuses et du nombre de boisson alcoolisé pour les femmes permet de mettre en évidence un fort effet séparateur. On peut voir que les femmes non fumeuses et peu alcoolisées (0, 2-6) sont à l’opposé des femmes fumeuses et fortement alcoolisées (1 , 6-39 ). Les vingt-cinq premiers jours sont peu différenciés puis l’écart se creuse rapidement jusqu’a 75 jours pour rester assez parallèle jusqu’au dernier jours du jeu de données. Les courbes du risque cumulé ont de nombreux croisements et en même temps restent très parallèles rendant l’analyse très difficile.
 
 
 # Modélisation
-Après les contestations effectuées précédemment, nous entrons dans la partie modèlisation.
-Nous testons deux type de modèle. Un modèle paramétrique et un modèle à risque proportionnel (Cox).
-Pour chaque modèle nous faisons une sélection de variable en éliminant successivement les variables qui ont le mmoins d 'effet et qui ne sont pas significative.
-Le modèle paramétrique permettra de modéliser la fonction de survie. Le modèle de Cox quand a lui permettra la moélisation du risque instantannée.
+Après les constatations effectuées précédemment, nous entrons dans la partie modélisation. Nous testons deux types de modèle. Un modèle paramétrique et un modèle à risque proportionnel (Cox). Pour chaque modèle nous faisons une sélection de variable en éliminant successivement les variables qui ont le moins d ’effet et qui ne sont pas significatives. Le modèle paramétrique permettra de modéliser la fonction de survie. Le modèle de Cox quant à lui permettra la modélisation du risque instantané. 
 ## Modèle paramétrique
-Dans notre modèle paramétrique, nous inserons toutes nos variables excepté celle dont les données manquanttes sont en très grand nombre.
-
-On commencera par étudier la forme de la fonction de survie globale en essayant de la modéliser par une loi de weibull (en bleu) qui sera comparer à l'estimation graphique de Kaplan Meier. Puis nous ajouterons les covariables afin d'ideintifier un modèle utilisable.
+Dans notre modèle paramétrique, nous insérons toutes nos variables, excepté celles dont les données manquantes sont en très grand nombre.
+On commencera par étudier la forme de la fonction de survie globale en essayant de la modéliser par une loi de Weibull (en bleu) qui sera comparée à l’estimation graphique de Kaplan Meier. Puis nous ajouterons les co-variables afin d’identifier un modèle utilisable.
 
 ```{r}
 fit <- survfit(Surv(d2g, indic) ~ 1, data = d2g) 
@@ -328,45 +309,38 @@ title("Fonction de survie - modèle de weibull.")
 summary(reg)
 
 ```
-Le choix du modèle weibull conforte l'idée que la loi exponentielle n'est pas meilleure. Le scale de 0.73 qui est à  1 pour une loi exponentielle, nous précise cette finalité.
+Le choix du modèle Weibull conforte l’idée que la loi exponentielle n’est pas meilleure. Le scale de 0.73 qui est à 1 pour une loi exponentielle, nous précise cette finalité.
 
 ```{r}
 reg<-survreg(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g, dist='weibull')
 summary(reg)
 ```
-La probabilité du test du Khi² est signicatif pour valider le modèle. 
-L'intercepte est le paramètre le plus significatif.
-L'effet des covariables est faible. Seul la variable fumeuse possède un effet significatif.
-La valeur fumeuse de 0.257 qui mis à l'exponentiel donne 1.29, permet de quantifier que la fumeuse à une survie 29% plus importante qu'une non fumeuse.
+La probabilité du test du Khi² est significative pour valider le modèle. L’intercepte est le paramètre le plus significatif. L’effet des co-variables est faible. Seul la variable fumeuse possède un effet significatif. La valeur fumeuse de 0.257 qui mis à l’exponentiel donne 1.29, permet de quantifier que la fumeuse a une survie 29% plus importante qu’une non fumeuse.
 
 
 ### Sélection de variables
-Pour améliorer le modèle, une sélection de variable est recherchée par supression paramètre après paramètre. 
+Pour améliorer le modèle, une sélection de variable est recherchée par suppression paramètre après paramètre.
 
 
 ```{r}
 reg<-survreg(Surv(d2g,indic)  ~ bmiH+fumF , d2g, dist='weibull')
 summary(reg)
 ```
-Le résultat de cette étape extrait deux variables que sont l'indice de masse corporelle des hommes et la variable fumeuse.
-La valeur fumeuse de 0.277 qui mis à l'exponentiel donne 1.32, permet d'indiquer que la une survie d'une fumeuse est plus importante de 32% par rapport à une non fumeuse.
-La variable indice de masse corporelle de 0.033 qui mis à l'exponentiel donne 1.034, permet de dire qu'à chaque unité de cette mesure la survie augmente de 3%.
+Le résultat de cette étape extrait deux variables que sont l’indice de masse corporelle des hommes et la variable fumeuse. La valeur fumeuse de 0.277 qui, mis à l’exponentiel donne 1.32, permet d’indiquer que la survie d’une fumeuse est plus importante de 32% par rapport à une non fumeuse. La variable indice de masse corporelle de 0.033 qui, mis à l’exponentiel donne 1.034, permet de dire qu’à chaque unité de cette mesure la survie augmente de 3%.
 
 
 ## Modèle à risque proportionnel
-Le modèle de Cox permet de modéliser l'effet des covariables sur les risques instantannés. Cela permet de modèliser toutes les personnes à risque qui n'ont pas encore eut l'événement de l'arret de grosesse.
+Le modèle de Cox permet de modéliser l’effet des covariables sur les risques instantanés. Cela permet de modéliser toutes les personnes à risque qui n’ont pas encore eut l’événement de l’arrêt de grossesse.
 
 ```{r}
 cox <-coxph(Surv(d2g,indic)  ~ bmiF + bmiH+alcF+alcH+fumF+fumH+ageF+ageH+sperm , d2g) 
 
 summary(cox)
 ```
-De toutes les covariables, seule la variable fumeuse comme dans le modèle paramétrique à un effet significatif.
-Etre fumeuse permet de réduire le risque instantané d'interruption de grosesse de 28%.
-Les probabilités de validité du modèle que sont les tests de Wald, de Maximum de vraisemblance et du score sont tous positives et inférieur à 5%.
+De toutes les covariables, seule la variable fumeuse comme dans le modèle paramétrique possède un effet significatif. Etre fumeuse permet de réduire le risque instantané d’interruption de grossesse de 28%. Les probabilités de validité du modèle que sont les tests de Wald, du Maximum de vraisemblance et du score sont toutes inférieurs à 5%.
 
 ### Vérification de l'hypotèse de proportionnalité 
-Un modèle de cox demande un certain nombre de condition pour être utiliser comme l'hypothès de proportionnalité qui n'est pas toujours facile à identifier.
+Un modèle de Cox demande un certain nombre de condition pour être utilisé comme l’hypothèse de proportionnalité qui n’est pas toujours facile à identifier.
 
 ```{r}
 #vérification HP
@@ -375,32 +349,25 @@ plot(coxzph[1]); abline (h =0 , col =" blue ")
 
 print(coxzph)
 ```
-La représentation des résidus de schoenfeld, permet de mettre en évidence l'indépendance entre les résidus et le temps ce qui valide l'hypothèse de proportionnalité.
-
-Toutes les variables sont significatifs sur la proportionnalité des risques. Le test Global renforce ce résultat de proportionnalité des risques. Notre modèle de Cox est valide. Il reste encore à l'améliorer et à le simplifier.
+La représentation des résidus de Schoenfeld, permet de mettre en évidence l’indépendance entre les résidus et le temps ce qui valide l’hypothèse de proportionnalité.
+Toutes les variables sont significatives sur la proportionnalité des risques. Le test Global renforce ce résultat de proportionnalité des risques. Notre modèle de Cox est valide. Il reste encore à l’améliorer et à le simplifier.
 
 ### Sélection de variables
 
-L'amélioration du modèle est fait par une sélection de variable par supression de paramètre après paramètre. 
+L’amélioration du modèle est faite par une sélection de variable par suppression paramètre après paramètre. 
 ```{r}
 cox<-coxph(Surv(d2g,indic)  ~ fumF , d2g)
 
 summary(cox)
 ```
-Cette sélection de variable montre une seule variable significative: la variable fumeuse. Au contraire du modèle paramétrique, la variable d'indice de masse corporelle des hommees qui a été la dernière variable à être retiré, n 'a pas été suffisamment significative pour être gardé.
-Ce résultat passe l'effet de la variable de 28 à 29 % de la réduction du risque instantané lorsque c'est une fumeuse.
+Cette sélection de variable montre une seule variable significative : la variable fumeuse. Au contraire du modèle paramétrique, la variable d’indice de masse corporelle des hommes qui a été la dernière variable à être retirée, n ’a pas été suffisamment significative pour être gardée. Ce résultat passe l’effet de la variable de 28 à 29 % de la réduction du risque instantané lorsque c’est une fumeuse.
 
 #Conclusion
 
-Après avoir analysé les données en regardant aussi bien le coté Survie que le coté Risque cumulé, nous avons put appréhender les problématique de ces données. Nous avons trouver des données manquantes que nous avons put corrigé autant que possible. 
-Nous avons pu remarquer, que les censures et les événements n'étaient pas organiser de la même facon. Nous avons pu remarquer aussi que le risque instanné était globalement très important durant les premiers jours de grossesse pour se réduire fortement par la suite. Et que la courbe survie avait une courbe descendante assez linéaire.
-Nous avon remarqué aussi que les variables dont certaines différences pouvaient apparaitre étaient le BMI des hommes, l'alcool chez les femmes, l'age des femmes, les fumeuses et fumeurs. 
-
-La modélisation a permis de mieux estimer les effets des variables et a permis de nuancer fortement les analyses des courbe de survie et des risques cumulés. Ainsi par exemple, l'effet de l'alcool n'est pas paru aussi significatif qu'espéré.
-
-La modélisation paramétrique a permis de mettre en oeuvre un loi de weibull. On a pu estimé très précisément l'effet de chaque variable sur la survie du délai de grossesse. La sélection des variables de ce modèle a permis de choisir le bmi des hommes et les femmes fumeuse comme éléments déterminant.
-
-La modèlisation à risque proportionnelle a permis de mesurer précisement l'effet de chaque variable sur le risque intantanné. Le résultat a été conforté sur le fait que le modèle respectait l'hypothèse de proportionnalité. La sélection de variable y a été plus stricte en ne retenant que les femmes fumeuses.
+Après avoir analysé les données en regardant aussi bien le coté Survie que le coté Risque cumulé, nous avons pu appréhender les problématiques de ces données. Nous avons trouvé des données manquantes que nous avons pu corriger autant que possible. Nous avons pu remarquer, que les censures et les événements n’étaient pas organisés de la même façon. Nous avons pu remarquer aussi que le risque instantané était globalement très important durant les premiers jours de grossesse pour se réduire fortement par la suite. La courbe survie avait une courbe descendante assez linéaire. Nous avons remarqué aussi que les variables dont certaines différences pouvaient apparaitre étaient le BMI des hommes, l’alcool chez les femmes, l’âge des femmes, les fumeuses et fumeurs.
+La modélisation a permis de mieux estimer les effets des variables et a permis de nuancer fortement les analyses des courbes de survie et des risques cumulés. Ainsi par exemple, l’effet de l’alcool n’est pas paru aussi significatif qu’espéré.
+La modélisation paramétrique a permis de mettre en œuvre une loi de Weibull. On a pu estimer très précisément l’effet de chaque variable sur la survie du délai de grossesse. La sélection des variables de ce modèle a permis de choisir le bmi des hommes et les femmes fumeuses comme éléments déterminants.
+La modélisation à risque proportionnelle a permis de mesurer précisément l’effet de chaque variable sur le risque instantané. Le résultat a été conforté sur le fait que le modèle respectait l’hypothèse de proportionnalité. La sélection de variable y a été plus stricte en ne retenant que les femmes fumeuses.
 
 
 
